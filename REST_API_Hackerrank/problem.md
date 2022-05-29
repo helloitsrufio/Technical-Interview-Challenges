@@ -24,14 +24,15 @@ The data field in the response contains a list of transaction records, with each
       -*location.zipCode*: the zip code of the location where the transaction took place.
   - *ip*: the IP address of the device which was used to perform the transaction.
 
- There will be a given user-id, *uid*, a transaction type, *txnType*, and a date in the format *MM-YYYY* as *monthYear*. Find the number of records that have been generated in *monthYear* which belong to the user uid, ahve a transaction type of *txnType*, and the transaction amount is greater than the monthly average spending. Average spending is calculated using *txnType = debit* records for the user in the given month *monthYear*. Note that the search is not case sensitive.
+ //TODO:
+ There will be a given user-id, *uid*, a transaction type, *txnType*, and a date in the format *MM-YYYY* as *monthYear*. Find the number of records that have been generated in *monthYear* which belong to the user uid, have a transaction type of *txnType*, and the transaction amount is greater than the monthly average spending. Average spending is calculated using *txnType = debit* records for the user in the given month *monthYear*. Note that the search is not case sensitive.
 
 ## Function Description
 
  Complete the function *getUserTransactions* using the given code. 
 
 *getUserTransactions* has the following parameter(s):
-  - *int uid*: the *id* for which records will be fetched, matched with *user.id* in the returned response from the API.
+  - *int uid*: the *id* for which records will be fetched, matched with **user.id* in the returned response from the API.
   - *string txnType*: the transaction type for which the records will be filtered.
   - *string monthYear*: the month and year for which the records will be filtered in the format MM-YYYY
 
