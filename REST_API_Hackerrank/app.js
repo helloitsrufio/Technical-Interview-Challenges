@@ -161,10 +161,13 @@ function createTxnArray(responseOne,extraResponses){
   const txnArray = []
 
   if(extraResponses){
-    txnArray = [...responseOne, ...extraResponses]
+    txnArray.push(responseOne)
+    extraResponses.forEach((e)=> txnArray.push(e))
   }else{
     txnArray.push(responseOne)
   }
+  console.log(txnArray)
+  return txnArray.data
 }
 
 //TODO: See if we can make a helper function that get rids of individual pages so we can access the stuff w/in it easier. 
