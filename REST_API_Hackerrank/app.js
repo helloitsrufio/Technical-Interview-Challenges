@@ -175,3 +175,145 @@ function sortTxnArray(filteredArray) {
 getUserTransactions(4, "2-2019").then((res) => console.log(res));
 //-------------end second attempt----------------
 
+//---------------solution--------------------
+("use strict");
+
+const fs = require("fs");
+const axios = require("axios");
+
+process.stdin.resume();
+process.stdin.setEncoding("utf-8");
+
+let inputString = "";
+let currentLine = 0;
+
+process.stdin.on("data", function (inputStdin) {
+  inputString += inputStdin;
+});
+
+process.stdin.on("end", function () {
+  inputString = inputString.split("\n");
+
+  main();
+});
+
+function readLine() {
+  return inputString[currentLine++];
+}
+
+//beginning of function I coded
+
+async function getUserTransaction(uid, txnType, monthYear) {
+  //do query #1
+  const responseOne = await queryOne(uid);
+
+  //do queries for extra pages if needed
+  const extraResponses =
+    responseOne.total_pages > 1
+      ? await extraQueries(uid, responseOne.total_pages)
+      : [];
+
+  const combinedArray = createCombinedArray(responseOne, extraResponses);
+  console.log(combinedArray.length);
+
+  const monthAndTxn = filterByMonthAndTxn(combinedArray, monthYear, txnType);
+  const monthAndTxnDebit = filterByMonthAndTxn(
+    combinedArray,
+    monthYear,
+    "debit"
+  );
+
+  const avgTxnCost = calcAveragePerMonth(monthAndTxnDebit, monthYear);
+
+  const greaterThanAverage = filterTransactions(monthAndTxn, avgTxnCost);
+  return greaterThanAverage;
+}
+
+async function queryOne(uid) {
+  let response = await axios.get(
+    `https://jsonmock.hackerrank.com/api/transactions/search?userId=${uid}`
+  );
+  let jsonData = response.data;
+  return jsonData;
+}
+
+async function extraQueries(uid, totalPages) {
+  let totalData = [];
+  for (let i = 2; i <= totalPages; i++) {
+    let response = await axios.get(
+      `https://jsonmock.hackerrank.com/api/transactions/search?userId=${uid}&page=${i}`
+    );
+    const data = response.data;
+    totalData.push(data.data);
+  }
+  return totalData;
+}
+
+function createCombinedArray(responseOne, extraResponses) {
+  const txnArray = [];
+  let combinedArray = [];
+  if (extraResponses) {
+    txnArray.push(responseOne.data);
+    extraResponses.forEach((e) => txnArray.push(e));
+  } else {
+    txnArray.push(responseOne.data);
+  }
+
+  txnArray.forEach((e) => {
+    return e.forEach((f) => {
+      return combinedArray.push(f);
+    });
+  });
+  return combinedArray;
+}
+
+function filterByMonthAndTxn(combinedArray, monthYear, txnType) {
+  let filteredArray = combinedArray.filter((e) => {
+    let month = new Date(e.timestamp).getUTCMonth();
+    let year = new Date(e.timestamp).getUTCFullYear();
+    let fullDate =
+      month < 10 ? `0${month + 1}-${year}` : `${month + 1}-${year}`;
+    return fullDate === monthYear && e.txnType === txnType;
+  });
+  return filteredArray;
+}
+
+function convertStringToFloats(str) {
+  return Number(str.replace(/\$|\,/g, ""));
+}
+
+function calcAveragePerMonth(monthAndTxn, monthYear) {
+  let dollarAmounts = monthAndTxn.map((e) => e.amount);
+  let dollarAmountsFloats = dollarAmounts.map((e) => convertStringToFloats(e));
+  let average =
+    dollarAmountsFloats.reduce((acc, c) => (acc += c), 0) / monthAndTxn.length;
+  return average;
+}
+
+function filterTransactions(monthAndTxn, avgTxnCost) {
+  let result = [];
+  monthAndTxn.forEach((e) => {
+    convertStringToFloats(e.amount) > avgTxnCost ? result.push(e.id) : null;
+  });
+  return result.length > 0 ? result : [-1];
+}
+//---------------end solution--------------------
+
+//provided function
+async function main() {
+  //the following is minimized in the editor until otherwise indicated
+  const ws = fs.createWriteStream(process.env.OUTPUT_PATH);
+
+  const uid = parseInt(readLine().trim(), 10);
+
+  const txnType = readLine();
+
+  const monthYear = readLine();
+
+  const result = await getUserTransaction(uid, txnType, monthYear);
+
+  ws.write(result.join("\n") + "\n");
+
+  ws.end();
+  //end minimized text under async function main()
+}
